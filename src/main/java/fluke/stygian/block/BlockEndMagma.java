@@ -32,7 +32,7 @@ public class BlockEndMagma extends Block
         this.setTickRandomly(true);
         this.setHardness(0.5F);
         this.setSoundType(SoundType.STONE);
-        setUnlocalizedName(Reference.MOD_ID + ".endmagma"); 
+        setTranslationKey(Reference.MOD_ID + ".endmagma");
 		setRegistryName(REG_NAME);
     }
 	

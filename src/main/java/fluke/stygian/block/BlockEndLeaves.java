@@ -36,8 +36,9 @@ public class BlockEndLeaves extends BlockLeaves
 	{
 		//TODO hey, hey, hey... check out that decay
         this.setDefaultState(this.blockState.getBaseState().withProperty(CHECK_DECAY, Boolean.valueOf(false)).withProperty(DECAYABLE, Boolean.valueOf(true)));
-        setUnlocalizedName(Reference.MOD_ID + ".endleaves"); 
-		setRegistryName(REG_NAME);
+        setTranslationKey(Reference.MOD_ID + ".endleaves");
+
+        setRegistryName(REG_NAME);
 	}
 	
 	protected int getSaplingDropChance(IBlockState state)

@@ -22,7 +22,7 @@ public class BlockEnderObsidian extends Block
         this.setHardness(50.0F);
         this.setResistance(2000.0F);
         this.setSoundType(SoundType.STONE);
-        setUnlocalizedName(Reference.MOD_ID + ".endobsidian"); 
+        setTranslationKey(Reference.MOD_ID + ".endobsidian");
 		setRegistryName(REG_NAME);
     }
 	

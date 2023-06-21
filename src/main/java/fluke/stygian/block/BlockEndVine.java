@@ -17,7 +17,7 @@ public class BlockEndVine extends BlockVine
     {
         super();
         this.setCreativeTab(CreativeTabs.DECORATIONS);
-        setUnlocalizedName(Reference.MOD_ID + ".endvine");
+        setTranslationKey(Reference.MOD_ID + ".endvine");
         setRegistryName(REG_NAME);
     }
 	

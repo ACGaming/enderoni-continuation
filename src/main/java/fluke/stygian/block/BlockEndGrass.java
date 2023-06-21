@@ -21,7 +21,7 @@ public class BlockEndGrass extends Block
         this.setSoundType(SoundType.GROUND);
         this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
         this.setHardness(0.5F);
-        setUnlocalizedName(Reference.MOD_ID + ".endgrass");
+		setTranslationKey(Reference.MOD_ID + ".endgrass");
         setRegistryName(REG_NAME);
 	}
 	

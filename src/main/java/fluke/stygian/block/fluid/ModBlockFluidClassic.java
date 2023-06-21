@@ -42,10 +42,9 @@ public class ModBlockFluidClassic extends BlockFluidClassic
     {
         super(parFluid, parMaterial);
     }
-    
     @Override
-    public void onEntityCollidedWithBlock(World worldIn, BlockPos pos, IBlockState state, Entity entityIn) {
-        super.onEntityCollidedWithBlock(worldIn, pos, state, entityIn);
+    public void onEntityCollision(World worldIn, BlockPos pos, IBlockState state, Entity entityIn) {
+        super.onEntityCollision(worldIn, pos, state, entityIn);
 //        if (worldIn.isRemote) return;
         if (entityIn.isEntityAlive())
         {

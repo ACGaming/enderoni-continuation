@@ -21,7 +21,7 @@ public class BlockEndPlanks extends Block
         this.setCreativeTab(CreativeTabs.BUILDING_BLOCKS);
         this.setHardness(2.0F);
         this.setSoundType(SoundType.WOOD);
-        setUnlocalizedName(Reference.MOD_ID + ".endplanks"); 
+		setTranslationKey(Reference.MOD_ID + ".endplanks");
 		setRegistryName(REG_NAME);
 	}
 	

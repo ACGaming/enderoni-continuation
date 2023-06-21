@@ -35,7 +35,7 @@ public class BlockEndCanopySapling extends BlockBush implements IGrowable
     {
         this.setDefaultState(this.blockState.getBaseState().withProperty(STAGE, Integer.valueOf(0)));
         this.setCreativeTab(CreativeTabs.DECORATIONS);
-        setUnlocalizedName(Reference.MOD_ID + ".endcanopysapling");
+        setTranslationKey(Reference.MOD_ID + ".endcanopysapling");
         setRegistryName(REG_NAME);
     }
     

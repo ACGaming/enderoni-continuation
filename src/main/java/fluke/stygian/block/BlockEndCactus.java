@@ -41,8 +41,9 @@ public class BlockEndCactus extends Block implements net.minecraftforge.common.I
         this.setCreativeTab(CreativeTabs.DECORATIONS);
         this.setHardness(0.4F);
         this.setSoundType(SoundType.CLOTH);
-        setUnlocalizedName(Reference.MOD_ID + ".endcactus"); 
-		setRegistryName(REG_NAME);
+        setTranslationKey(Reference.MOD_ID + ".endcactus");
+
+        setRegistryName(REG_NAME);
 	}
 	
 	public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand)
@@ -139,7 +140,7 @@ public class BlockEndCactus extends Block implements net.minecraftforge.common.I
     /**
      * Called When an Entity Collided with the Block
      */
-    public void onEntityCollidedWithBlock(World worldIn, BlockPos pos, IBlockState state, Entity entityIn)
+    public void onEntityCollision(World worldIn, BlockPos pos, IBlockState state, Entity entityIn)
     {
         entityIn.attackEntityFrom(DamageSource.CACTUS, 1.0F);
     }

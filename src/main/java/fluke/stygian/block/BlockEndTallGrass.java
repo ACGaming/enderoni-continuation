@@ -37,7 +37,7 @@ public class BlockEndTallGrass extends BlockBush implements net.minecraftforge.c
     {
     	super(Material.VINE, MapColor.PURPLE);
     	this.setSoundType(SoundType.PLANT);
-    	setUnlocalizedName(Reference.MOD_ID + ".endtallgrass");
+        setTranslationKey(Reference.MOD_ID + ".endtallgrass");
         setRegistryName(REG_NAME);
     }
     
