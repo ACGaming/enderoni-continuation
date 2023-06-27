@@ -15,6 +15,9 @@ import net.minecraft.world.gen.layer.GenLayerSmooth;
 import net.minecraft.world.gen.layer.GenLayerVoronoiZoom;
 import net.minecraft.world.gen.layer.GenLayerZoom;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public abstract class EndGenLayer 
 {
     /** seed from World#getWorldSeed that is used in the LCG prng */
@@ -28,6 +31,11 @@ public abstract class EndGenLayer
     private long chunkSeed;
     /** base seed to the LCG prng provided via the constructor */
     protected long baseSeed;
+    private Map<Integer, Integer> nextIntCache = new HashMap<>();
+
+    private long cachedChunkSeed = 0L;
+
+    private Map<Integer, Map<Integer, Boolean>> biomesEqualOrMesaPlateauCache = new HashMap<>();
 
     public static GenLayer[] initializeAllBiomeGenerators(long seed, WorldType worldType, ChunkGeneratorSettings genSettings)
     {
@@ -116,34 +124,40 @@ public abstract class EndGenLayer
     /**
      * Initialize layer's current chunkSeed based on the local worldGenSeed and the (x,z) chunk coordinates.
      */
-    public void initChunkSeed(long xSeed, long zSeed)
-    {
-        this.chunkSeed = this.worldGenSeed;
-        this.chunkSeed *= this.chunkSeed * 6364136223846793005L + 1442695040888963407L;
-        this.chunkSeed += xSeed;
-        this.chunkSeed *= this.chunkSeed * 6364136223846793005L + 1442695040888963407L;
-        this.chunkSeed += zSeed;
-        this.chunkSeed *= this.chunkSeed * 6364136223846793005L + 1442695040888963407L;
-        this.chunkSeed += xSeed;
-        this.chunkSeed *= this.chunkSeed * 6364136223846793005L + 1442695040888963407L;
-        this.chunkSeed += zSeed;
+    public void initChunkSeed(long xSeed, long zSeed) {
+        if (xSeed != cachedChunkSeed) {
+            this.chunkSeed = this.worldGenSeed;
+            this.chunkSeed *= this.chunkSeed * 6364136223846793005L + 1442695040888963407L;
+            this.chunkSeed += xSeed;
+            this.chunkSeed *= this.chunkSeed * 6364136223846793005L + 1442695040888963407L;
+            this.chunkSeed += zSeed;
+            this.chunkSeed *= this.chunkSeed * 6364136223846793005L + 1442695040888963407L;
+            this.chunkSeed += xSeed;
+            this.chunkSeed *= this.chunkSeed * 6364136223846793005L + 1442695040888963407L;
+            this.chunkSeed += zSeed;
+            cachedChunkSeed = xSeed;
+        }
     }
 
     /**
      * Generates a pseudo random number between 0 and another integer.
      */
-    protected int nextInt(int max)
-    {
-        int i = (int)((this.chunkSeed >> 24) % (long)max);
+    protected int nextInt(int max) {
+        if (nextIntCache.containsKey(max)) {
+            return nextIntCache.get(max);
+        } else {
+            int i = (int) ((this.chunkSeed >> 24) % (long) max);
+            if (i < 0) {
+                i += max;
+            }
+            this.chunkSeed *= this.chunkSeed * 6364136223846793005L + 1442695040888963407L;
+            this.chunkSeed += this.worldGenSeed;
 
-        if (i < 0)
-        {
-            i += max;
+            // Cache the result
+            nextIntCache.put(max, i);
+
+            return i;
         }
-
-        this.chunkSeed *= this.chunkSeed * 6364136223846793005L + 1442695040888963407L;
-        this.chunkSeed += this.worldGenSeed;
-        return i;
     }
 
     /**
@@ -152,30 +166,20 @@ public abstract class EndGenLayer
      */
     public abstract int[] getInts(int areaX, int areaY, int areaWidth, int areaHeight);
 
-    protected static boolean biomesEqualOrMesaPlateau(int biomeIDA, int biomeIDB)
-    {
-        if (biomeIDA == biomeIDB)
-        {
+    protected static boolean biomesEqualOrMesaPlateau(int biomeIDA, int biomeIDB) {
+        if (biomeIDA == biomeIDB) {
             return true;
-        }
-        else
-        {
+        } else {
             Biome biome = Biome.getBiome(biomeIDA);
             Biome biome1 = Biome.getBiome(biomeIDB);
 
-            if (biome != null && biome1 != null)
-            {
-                if (biome != Biomes.MESA_ROCK && biome != Biomes.MESA_CLEAR_ROCK)
-                {
+            if (biome != null && biome1 != null) {
+                if (biome != Biomes.MESA_ROCK && biome != Biomes.MESA_CLEAR_ROCK) {
                     return biome == biome1 || biome.getBiomeClass() == biome1.getBiomeClass();
-                }
-                else
-                {
+                } else {
                     return biome1 == Biomes.MESA_ROCK || biome1 == Biomes.MESA_CLEAR_ROCK;
                 }
-            }
-            else
-            {
+            } else {
                 return false;
             }
         }

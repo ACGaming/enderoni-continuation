@@ -67,42 +67,35 @@ public class BiomeEndJungle extends Biome
     {
         return 0;
     }
-    
-    public void decorate(World world, Random rand, BlockPos pos)
-    {	
-    	for(int x=0; x<16; x++)
-    	{
-    		for(int z=0; z<16; z++)
-    		{
-    			int plantRoll = randy.nextInt(100);
-    			if(plantRoll <= 17)
-    			{
-    				int terrainHeight = getEndSurfaceHeight(world, pos.add(x+8, 0, z+8), 52-randy.nextInt(5), 70);
-    				if(terrainHeight > 0)
-    				{
-    					BlockPos plantPos = pos.add(x+8, terrainHeight, z+8);
-    					if(plantRoll == 17)
-    						endGlowGrass.generate(world, randy, plantPos);
-    					else
-    						endTallGrass.generate(world, randy, plantPos);
-    				}
-    			}
-    		}
-    	}
-    				
-		
-		if(randy.nextInt(7) != 0)
-			endGrassRemoval.generate(world, rand, pos.add(8, 0, 8));
-		
-		if(randy.nextInt(Configs.worldgen.treeFrequency) == 0)
-		{
-			int yHeight = getEndSurfaceHeight(world, pos.add(16, 0, 16), 50, 70);
-			if(yHeight > 0)
-				endCanopyTree.generate(world, rand, pos.add(16, yHeight+1, 16));
+
+	public void decorate(World world, Random rand, BlockPos pos) {
+		for (int x = 0; x < 16; x++) {
+			for (int z = 0; z < 16; z++) {
+				int plantRoll = randy.nextInt(100);
+				if (plantRoll <= 17) {
+					int terrainHeight = getEndSurfaceHeight(world, pos.add(x + 8, 0, z + 8), 52 - randy.nextInt(5), 70);
+					if (terrainHeight > 0) {
+						BlockPos plantPos = pos.add(x + 8, terrainHeight, z + 8);
+						if (plantRoll == 17)
+							endGlowGrass.generate(world, randy, plantPos);
+						else
+							endTallGrass.generate(world, randy, plantPos);
+					}
+				}
+			}
 		}
-		
+
+		if (rand.nextInt(7) != 0)
+			endGrassRemoval.generate(world, rand, pos.add(8, 0, 8));
+
+		if (rand.nextInt(Configs.worldgen.treeFrequency) == 0) {
+			int yHeight = getEndSurfaceHeight(world, pos.add(16, 0, 16), 50, 70);
+			if (yHeight > 0)
+				endCanopyTree.generate(world, rand, pos.add(16, yHeight + 1, 16));
+		}
+
 		super.decorate(world, rand, pos);
-    }
+	}
     
     private int getEndSurfaceHeight(World world, BlockPos pos, int min, int max)
     {
