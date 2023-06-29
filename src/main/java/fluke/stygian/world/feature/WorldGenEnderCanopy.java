@@ -10,12 +10,16 @@ import net.minecraft.block.BlockVine;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 
-//TODO floating over lowering terrain/ roots
+// todo cascading worldgen buildBranches + isValidGenLocation
+//TODO seed : -1763057287414765858
+// todo location : /tp 9907 70 128
+
 public class WorldGenEnderCanopy extends WorldGenAbstractTree
 {
 	protected static final IBlockState LOG = ModBlocks.endLog.getDefaultState();
@@ -72,20 +76,40 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 			}
 		}
 
+		for(BlockPos canopyBlock : BlockPos.getAllInBoxMutable(pos.add(-23, trunkHeight+7, -23), pos.add(23, trunkHeight+7, 23)))
+		{
+			if(!isReplaceable(world, canopyBlock))
+			{
+				//System.out.println(canopyBlock);
+				return false;
+			}
+		}
+
 		return true;
 
 	}
 
-	@Override
-	public boolean isReplaceable(World world, BlockPos pos)
-	{
+	public boolean isReplaceable(World world, BlockPos pos) {
 		IBlockState state = world.getBlockState(pos);
 		return isReplaceable(world, pos, state);
 	}
 
-	private boolean isReplaceable(World world, BlockPos pos, IBlockState state)
-	{
-		return state.getBlock().isAir(state, world, pos) || state.getBlock().isLeaves(state, world, pos) || state.getBlock().isWood(world, pos) || canGrowInto(state.getBlock());
+	private boolean isReplaceable(World world, BlockPos pos, IBlockState state) {
+		Block block = state.getBlock();
+
+		if (block.isAir(state, world, pos) || block.isLeaves(state, world, pos) || block.isWood(world, pos) || canGrowInto(block)) {
+			return true;
+		}
+
+		if (block instanceof BlockBush || block instanceof BlockVine) {
+			return true;
+		}
+
+		if (block instanceof BlockGrass || block instanceof BlockDirt || block instanceof BlockSand) {
+			return world.isAirBlock(pos.up());
+		}
+
+		return false;
 	}
 
 	private void buildCanopy(World world, Random rand, BlockPos pos, List<BranchInfo> branchEnds)
@@ -184,11 +208,9 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 				addHangingVine(world, pos.north(), BlockVine.SOUTH, length);
 			if(world.isAirBlock(pos.south()))
 				addHangingVine(world, pos.south(), BlockVine.NORTH, length);
-
-
 		}
-
 	}
+
 
 	private void addHangingVine(World world, BlockPos pos, PropertyBool prop, int length)
 	{
@@ -234,76 +256,78 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 			}
 		}
 	}
-
-	private List<BranchInfo> buildBranches(World world, Random rand, BlockPos center, int trunkHeight)
-	{
-		List<BranchInfo> branchEndPos = new ArrayList<BranchInfo>();
+	BlockPos rotatedBranchEnd;
+	private List<BranchInfo> buildBranches(World world, Random rand, BlockPos center, int trunkHeight) {
+		List<BranchInfo> branchEndPos = new ArrayList<>();
+		List<BlockPos> rotatedBranchEndPositions = new ArrayList<>();
 		double xAngleTranslation;
 		double zAngleTranslation;
-		center = center.add(0, trunkHeight-2, 0);
-		for(int n=0; n<7; n++)
-		{
-			//maybe we just don't bother making a branch this time
-			if(rand.nextInt(21) == 0)
+		center = center.add(0, trunkHeight - 2, 0);
+
+		// Calculate logPos and rotatedBranchEnd before the loop
+		int rotEndPosX = 0;
+		int rotEndPosZ = 0;
+		BlockPos branchStart = null;
+
+		for (int n = 0; n < 7; n++) {
+			// maybe we just don't bother making a branch this time
+			if (rand.nextInt(21) == 0)
 				continue;
 
-			//only make branch 7 rarely
-			if(n == 6 && rand.nextInt(8) != 0)
+			// only make branch 7 rarely
+			if (n == 6 && rand.nextInt(8) != 0)
 				continue;
 
 			int branchLength;
 			int branchHeight;
 			int branchAngle;
 
-			//first 4 branches further out and in the four diagonal directions
-			if(n < 4)
-			{
-				branchLength = 14 + rand.nextInt(8);
-				branchHeight = 8 + rand.nextInt(7);
-				branchAngle = MathUtils.randIntBetween((45+90*n)-10, (45+90*n)+10, rand);
+			int randInt = rand.nextInt(); // Store the result of rand.nextInt() in a variable
+
+			// first 4 branches further out and in the four diagonal directions
+			if (n < 4) {
+				branchLength = 14 + randInt % 8;
+				branchHeight = 8 + randInt % 7;
+				branchAngle = MathUtils.randIntBetween((45 + 90 * n) - 10, (45 + 90 * n) + 10, rand);
 			}
-			//next 2 branches closer and higher with more freedom of angle
-			else if(n < 6)
-			{
-				branchLength = 9 + rand.nextInt(7);
-				branchHeight = 15 + rand.nextInt(3);
-				branchAngle = MathUtils.randIntBetween((90+180*(n-4))-35, (90+180*(n-4))+35, rand);
+			// next 2 branches closer and higher with more freedom of angle
+			else if (n < 6) {
+				branchLength = 9 + randInt % 7;
+				branchHeight = 15 + randInt % 3;
+				branchAngle = MathUtils.randIntBetween((90 + 180 * (n - 4)) - 35, (90 + 180 * (n - 4)) + 35, rand);
 			}
-			//last, less common, branch shorter and lower with no angle restriction
-			else
-			{
-				branchLength = 5 + rand.nextInt(5);
-				branchHeight = 5 + rand.nextInt(5);
-				branchAngle = rand.nextInt(360);
+			// last, less common, branch shorter and lower with no angle restriction
+			else {
+				branchLength = 5 + randInt % 5;
+				branchHeight = 5 + randInt % 5;
+				branchAngle = randInt % 360;
 			}
 
 			xAngleTranslation = Math.cos(Math.toRadians(branchAngle));
 			zAngleTranslation = Math.sin(Math.toRadians(branchAngle));
-			int xOffset = (int)Math.round(1*xAngleTranslation);
-			int zOffset = (int)Math.round(1*zAngleTranslation);
+			int xOffset = (int) Math.round(1 * xAngleTranslation);
+			int zOffset = (int) Math.round(1 * zAngleTranslation);
 
-			//current CurvedBresehnam only works in 2d, ignore z axis
-			BlockPos branchStart = center.add(xOffset, 0, zOffset);
-			BlockPos branchCurve = center.add(branchLength/3, branchHeight, 0);
-			BlockPos branchEnd = center.add(branchLength+xOffset, branchHeight, 0);
+			// current CurvedBresehnam only works in 2d, ignore z axis
+			branchStart = center.add(xOffset, 0, zOffset);
+			BlockPos branchCurve = center.add(branchLength / 3, branchHeight, 0);
+			BlockPos branchEnd = center.add(branchLength + xOffset, branchHeight, 0);
 
-			//add the actual branch end position to a list so we can add leaves to it later
-			int rotEndPosX = (int)Math.round((branchLength+xOffset)* xAngleTranslation);
-			int rotEndPosZ = (int)Math.round((branchLength+zOffset)* zAngleTranslation);
+			// add the actual branch end position to a list so we can add leaves to it later
+			rotEndPosX = (int) Math.round((branchLength + xOffset) * xAngleTranslation);
+			rotEndPosZ = (int) Math.round((branchLength + zOffset) * zAngleTranslation);
 			BlockPos rotatedBranchEnd = branchStart.add(rotEndPosX, branchHeight, rotEndPosZ);
-			// #todo
-		//	branchEndPos.add(new BranchInfo(rotatedBranchEnd, branchAngle));
+			branchEndPos.add(new BranchInfo(rotatedBranchEnd, branchAngle));
+			rotatedBranchEndPositions.add(rotatedBranchEnd);
 
 			BlockPos[] branchArray = MathUtils.getQuadBezierArray(branchStart, branchCurve, branchEnd);
-			for(BlockPos pos : branchArray) {
+			for (BlockPos pos : branchArray) {
 				int pxXoffset = pos.getX() - branchStart.getX();
 				int pxYoffset = pos.getY() - branchStart.getY();
-				int pxZoffset = pos.getZ() - branchStart.getZ();
-				int pxDistance = pxXoffset;
 
-				//get x, z positions for branches at specified angle
-				int angledX = (int)Math.round(pxDistance * xAngleTranslation);
-				int angledZ = (int)Math.round(pxDistance * zAngleTranslation);
+				// get x, z positions for branches at specified angle
+				int angledX = (int) Math.round(pxXoffset * xAngleTranslation);
+				int angledZ = (int) Math.round(pxXoffset * zAngleTranslation);
 
 				BlockPos logPos = branchStart.add(angledX, pxYoffset, angledZ);
 
@@ -313,11 +337,23 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 				BlockPos offsetPos = logPos.add(xOffset, 0, zOffset);
 				placeLogAt(world, offsetPos);
 
-				if(pxDistance <= 5) {
+				if (pxXoffset <= 5) {
 					BlockPos negOffsetPos = logPos.add(-xOffset, 0, -zOffset);
 					placeLogAt(world, negOffsetPos);
 				}
 			}
+		}
+		for (BlockPos rotatedBranchEnd : rotatedBranchEndPositions) {
+			placeLogAt(world, rotatedBranchEnd);
+		}
+		if (branchStart != null) {
+			// Place the log block at branchStart outside the loop
+			placeLogAt(world, branchStart);
+		}
+
+		if (rotatedBranchEnd != null) {
+			// Place the log block at rotatedBranchEnd outside the loop
+			placeLogAt(world, rotatedBranchEnd);
 		}
 
 		return branchEndPos;
