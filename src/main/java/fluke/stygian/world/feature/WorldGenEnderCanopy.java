@@ -1,24 +1,23 @@
 package fluke.stygian.world.feature;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+// todo cascading worldgen buildBranches + isValidGenLocation
+//TODO seed : -1763057287414765858
+// todo location : /tp 9907 70 128
 
 import fluke.stygian.block.ModBlocks;
 import fluke.stygian.util.MathUtils;
-import net.minecraft.block.BlockVine;
+import net.minecraft.block.*;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
 
-// todo cascading worldgen buildBranches + isValidGenLocation
-//TODO seed : -1763057287414765858
-// todo location : /tp 9907 70 128
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class WorldGenEnderCanopy extends WorldGenAbstractTree
 {

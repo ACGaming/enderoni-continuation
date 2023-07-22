@@ -36,6 +36,7 @@ public class BiomeEndJungle extends Biome
 		properties.setTemperature(Biomes.SKY.getDefaultTemperature());
 		properties.setRainfall(Biomes.SKY.getRainfall());
 		properties.setRainDisabled();
+		properties.setBaseBiome(String.valueOf(Biomes.SKY)); // This will set the base biome to "The End" biome, which will be 1,000 blocks away from spawn.
 	}
 	
     public BiomeEndJungle()

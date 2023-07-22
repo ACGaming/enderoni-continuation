@@ -7,18 +7,18 @@ import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
-public class BiomeRegistrar 
+public class BiomeRegistrar
 {
-	
+
 	public static final Biome END_JUNGLE = new BiomeEndJungle();
 	public static final Biome END_VOLCANO = new BiomeEndVolcano();
 	
 	public static void registerBiomes()
 	{
-		initBiome(END_JUNGLE, "stygian_growth", Type.END);
-		initBiome(END_VOLCANO, "acidic_plains", Type.END);
+		initBiome(END_JUNGLE, "stygian:stygian_growth", Type.END);
+		initBiome(END_VOLCANO, "stygian:acidic_plains", Type.END);
 	}
-	
+
 	private static void initBiome(Biome biome, String name, Type... types)
 	{
 		biome.setRegistryName(name);
