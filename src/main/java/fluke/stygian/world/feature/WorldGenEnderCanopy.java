@@ -21,13 +21,13 @@ import java.util.Random;
 
 public class WorldGenEnderCanopy extends WorldGenAbstractTree
 {
+	private final List<BlockPos> rotatedBranchEndPositions = new ArrayList<>();
 	private static final IBlockState LOG = ModBlocks.endLog.getDefaultState();
 	private static final IBlockState LEAF = ModBlocks.endLeaves.getDefaultState();
 	private static final IBlockState END_GRASS = ModBlocks.endGrass.getDefaultState();
-	private static final int MIN_TRUNK_HEIGHT = 12;
-	private static final int MAX_TRUNK_HEIGHT = 20;
-	private static final int MAX_BRANCH_LENGTH = 20;
-
+	private static final int MIN_TRUNK_HEIGHT = 15;
+	private static final int MAX_TRUNK_HEIGHT = 25;
+	private static final int TRUNK_CORE = 5;
 
 	public WorldGenEnderCanopy(boolean notify) {
 		super(notify);
@@ -39,59 +39,31 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 		if (inState != END_GRASS && inState != Blocks.END_STONE.getDefaultState())
 			pos = pos.down();
 
-		int trunkHeight = MIN_TRUNK_HEIGHT + rand.nextInt(MAX_TRUNK_HEIGHT - MIN_TRUNK_HEIGHT + 1);
-
-		// Check for surrounding terrain
-		if (!isValidGenLocation(world, pos, trunkHeight))
+		int randomValue = rand.nextInt(MAX_TRUNK_HEIGHT - MIN_TRUNK_HEIGHT + 1);
+		int trunkHeight = MIN_TRUNK_HEIGHT + randomValue;
+		if(!isValidGenLocation(world, pos, rand))
 			return false;
 
 		// Adjust trunk height and branch lengths based on surrounding terrain
-		int actualTrunkHeight = MathHelper.clamp(MIN_TRUNK_HEIGHT + rand.nextInt(MAX_TRUNK_HEIGHT - MIN_TRUNK_HEIGHT + 1), MIN_TRUNK_HEIGHT, trunkHeight);
+		int actualTrunkHeight = MathHelper.clamp(MIN_TRUNK_HEIGHT + randomValue, MIN_TRUNK_HEIGHT, trunkHeight);
 
-		List<BranchInfo> branchEndPos;
 		buildTrunk(world, rand, pos, actualTrunkHeight);
-		branchEndPos = buildBranches(world, rand, pos, actualTrunkHeight);
+
+		List<BranchInfo> branchEndPos = buildBranches(world, rand, pos, actualTrunkHeight);
 		buildCanopy(world, rand, pos, branchEndPos);
 		return true;
 	}
 
-	private boolean isValidGenLocation(World world, BlockPos pos, int trunkHeight) {
-		if (!isValidBaseLocation(world, pos) || !isValidTrunkLocation(world, pos, trunkHeight) || !isValidCanopyLocation(world, pos, trunkHeight)) {
-			return false;
-		}
-		return true;
-	}
-
-	private boolean isValidBaseLocation(World world, BlockPos pos) {
-		for (BlockPos trunkBaseBlock : BlockPos.getAllInBoxMutable(pos.add(-5, 0, -5), pos.add(5, 2, 5))) {
-			IBlockState state = world.getBlockState(trunkBaseBlock);
-			if (!isReplaceable(world, trunkBaseBlock, state) && state.getBlock() != ModBlocks.endCanopySapling) {
-				return false;
+	private void placeLogBelow(World world, Random rand, BlockPos pos) {
+		for (int i = 1; i <= 3; i++) {
+			BlockPos below = pos.down(i);
+			if (world.isAirBlock(below)) {
+				placeLogAt(world, below);
+			} else {
+				break;
 			}
 		}
-		return true;
 	}
-
-	private boolean isValidTrunkLocation(World world, BlockPos pos, int trunkHeight) {
-		for (BlockPos trunkCoreBlock : BlockPos.getAllInBoxMutable(pos.add(-1, 3, -1), pos.add(1, trunkHeight - 1, 3))) {
-			if (!isReplaceable(world, trunkCoreBlock)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private boolean isValidCanopyLocation(World world, BlockPos pos, int trunkHeight) {
-		for (BlockPos canopyBlock : BlockPos.getAllInBoxMutable(pos.add(-23, trunkHeight + 7, -23), pos.add(23, trunkHeight + 7, 23))) {
-			IBlockState state = world.getBlockState(canopyBlock.down());
-			if (!isReplaceable(world, canopyBlock) && canopyBlock.getY() >= pos.getY()
-					&& !(state.getBlock() instanceof BlockLeaves) && !(state.getBlock() instanceof BlockLog)) {
-				return false;
-			}
-		}
-		return true;
-	}
-
 	private void placeLogAt(World worldIn, BlockPos pos) {
 		worldIn.setBlockState(pos, LOG);
 	}
@@ -103,6 +75,58 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 		}
 	}
 
+	public boolean isValidGenLocation(World world, BlockPos pos, Random rand) {
+		int randomValue = rand.nextInt(MAX_TRUNK_HEIGHT - MIN_TRUNK_HEIGHT + 1);
+		int trunkHeight = MIN_TRUNK_HEIGHT + randomValue;
+		trunkHeight = MathHelper.clamp(trunkHeight, MIN_TRUNK_HEIGHT, MAX_TRUNK_HEIGHT);
+
+		if (pos.getY() < 3 || pos.getY() + trunkHeight + 22 > 255)
+			return false;
+
+		int trunkRadius = 1;
+		for (int y = 3; y < trunkHeight; y++) {
+			for (int x = -trunkRadius; x <= trunkRadius; x++) {
+				for (int z = -trunkRadius; z <= trunkRadius; z++) {
+					BlockPos trunkCoreBlock = pos.add(x, y, z);
+					if (!isReplaceable(world, trunkCoreBlock)) {
+						//System.out.println(trunkCoreBlock);
+						return false;
+					}
+				}
+			}
+		}
+
+		int canopyRadius = 30; // You can adjust the radius as needed
+		for (int y = trunkHeight + 7; y < trunkHeight + 30; y++) {
+			for (int x = -canopyRadius; x <= canopyRadius; x++) {
+				for (int z = -canopyRadius; z <= canopyRadius; z++) {
+					BlockPos canopyBlock = pos.add(x, y, z);
+					if (!isReplaceable(world, canopyBlock)) {
+						//System.out.println(canopyBlock);
+						return false;
+					}
+				}
+			}
+		}
+
+		// Change to use actual trunkHeight here
+		int canopyRadiusSquared = 23 * 23;
+		for (int y = trunkHeight + 7; y < trunkHeight + 30; y++) {
+			for (int x = -23; x <= 23; x++) {
+				for (int z = -23; z <= 23; z++) {
+					BlockPos canopyBlock = pos.add(x, y, z);
+					int distSquared = x * x + z * z;
+					if (distSquared < canopyRadiusSquared && !isReplaceable(world, canopyBlock)) {
+						//System.out.println(canopyBlock);
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
 	public boolean isReplaceable(World world, BlockPos pos) {
 		IBlockState state = world.getBlockState(pos);
 		return isReplaceable(world, pos, state);
@@ -111,87 +135,71 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 	private boolean isReplaceable(World world, BlockPos pos, IBlockState state) {
 		Block block = state.getBlock();
 
-		if (block.isAir(state, world, pos) || block.isLeaves(state, world, pos) || block.isWood(world, pos) || canGrowInto(block)) {
+		if (block.isAir(state, world, pos) || block.isLeaves(state, world, pos) || block.isWood(world, pos) || canGrowInto(block)
+				|| block == Blocks.END_STONE) {
 			return true;
 		}
 
 		if (block instanceof BlockBush || block instanceof BlockVine) {
 			return true;
 		}
-
+		if (block.canBeReplacedByLeaves(state, world, pos)){
+			return true;
+		}
 		if (block instanceof BlockGrass || block instanceof BlockDirt || block instanceof BlockSand) {
-			return world.isAirBlock(pos.up());
+			return true;
 		}
 
 		return false;
 	}
 
-	private void buildCanopy(World world, Random rand, BlockPos pos, List<BranchInfo> branchEnds)
-	{
-		List<BlockPos> possibleVineSpots = new ArrayList<BlockPos>();
+	private void buildCanopy(World world, Random rand, BlockPos pos, List<BranchInfo> branchEnds) {
+		List<BlockPos> possibleVineSpots = new ArrayList<>();
 
-		for(BranchInfo branch : branchEnds)
-		{
+		for (BranchInfo branch : branchEnds) {
 			double xAngleTranslation = Math.cos(Math.toRadians(branch.rotationAngle));
 			double zAngleTranslation = Math.sin(Math.toRadians(branch.rotationAngle));
-			int xAnglizer = (int)Math.round(1*xAngleTranslation);
-			int zAnglizer = (int)Math.round(1*zAngleTranslation);
-			for(int y=0; y<=2; y++)
-			{
+			int xAnglizer = (int) Math.round(1 * xAngleTranslation);
+			int zAnglizer = (int) Math.round(1 * zAngleTranslation);
+			for (int y = 0; y <= 2; y++) {
 				int canopyRadius = 8;
-				if(y == 0)
+				if (y == 0)
 					canopyRadius -= 3;
-				else if(y == 2)
+				else if (y == 2)
 					canopyRadius -= 2;
 
-				int maxDist = canopyRadius*canopyRadius;
-				int lesserMaxDist = (canopyRadius-1)*(canopyRadius);
-				//int greaterMaxDist = (canopyRadius+1)*(canopyRadius);
+				int maxDist = canopyRadius * canopyRadius;
+				int lesserMaxDist = (canopyRadius - 1) * (canopyRadius);
 
-				for(int x=-canopyRadius; x<=canopyRadius; x++)
-				{
-					for(int z=-canopyRadius; z<=canopyRadius; z++)
-					{
-
-						double xDist = x*x;
-						double zDist = z*z;
+				for (int x = -canopyRadius; x <= canopyRadius; x++) {
+					for (int z = -canopyRadius; z <= canopyRadius; z++) {
+						double xDist = x * x;
+						double zDist = z * z;
 
 						double ratio;
 						int num;
 						int denom;
-						if(Math.abs(x) > Math.abs(z))
-						{
-							ratio = (z*zAnglizer)/((x*xAnglizer)+0.001);
-						}
-						else
-						{
-							ratio = (x*xAnglizer)/((z*zAnglizer)+0.001);
+						if (Math.abs(x) > Math.abs(z)) {
+							ratio = (z * zAnglizer) / ((x * xAnglizer) + 0.001);
+						} else {
+							ratio = (x * xAnglizer) / ((z * zAnglizer) + 0.001);
 						}
 
-						ratio = 1-(ratio+1.0)/2.0;
+						ratio = 1 - (ratio + 1.0) / 2.0;
 						double squishFactor = MathHelper.clampedLerp(1.0, 1.55, ratio);
 						xDist *= squishFactor;
 						zDist *= squishFactor;
 
-						//this actually makes an interesting shape
-//					double ratio = x/(z+0.001);
-//					ratio = ratio<1? 1: ratio;
-//					ratio = ratio>3? 3: ratio;
-//					zDist *= ratio;
-//					xDist *= ratio;
-
-						//roughs up the edges of the canopy a bit
 						int distortedMaxDistance;
-						if(rand.nextBoolean())
+						if (rand.nextBoolean())
 							distortedMaxDistance = lesserMaxDist;
 						else
 							distortedMaxDistance = maxDist;
 
-						if(xDist+zDist < distortedMaxDistance)
-						{
+						if (xDist + zDist < distortedMaxDistance) {
 							placeLeafAt(world, branch.endPoint.add(x, y, z));
-
-							if(y < 2 && xDist+zDist > lesserMaxDist && rand.nextInt(4) == 0)
+							placeLogBelow(world, rand, branch.endPoint.add(x, y, z));
+							if (y < 2 && xDist + zDist > lesserMaxDist && rand.nextInt(4) == 0)
 								possibleVineSpots.add(branch.endPoint.add(x, y, z));
 						}
 					}
@@ -199,11 +207,9 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 			}
 		}
 
-		for(BlockPos vinePos : possibleVineSpots)
-		{
+		for (BlockPos vinePos : possibleVineSpots) {
 			placeVine(world, rand, vinePos);
 		}
-
 	}
 
 	private void placeVine(World world, Random rand, BlockPos pos)
@@ -237,58 +243,45 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 		}
 	}
 
-	private void buildTrunk(World world, Random rand, BlockPos center, int height)
-	{
-		//int thiccness = 11;
-		int trunkCore = 5;
-		int trunkDecoWidth = 7;
-		for(int x=-trunkCore; x<=trunkCore; x++)
-		{
-			for(int z=-trunkCore; z<=trunkCore; z++)
-			{
+	private void buildTrunk(World world, Random rand, BlockPos center, int height) {
+		for (int x = -TRUNK_CORE; x <= TRUNK_CORE; x++) {
+			for (int z = -TRUNK_CORE; z <= TRUNK_CORE; z++) {
 				int colHeight;
 
-				//core will always be a min thickness of 3x3
-				if(Math.abs(x)<=1 && Math.abs(z)<=1)
-				{
+				// Core will always be a minimum thickness of 3x3
+				if (Math.abs(x) <= 1 && Math.abs(z) <= 1) {
 					colHeight = height;
-				}
-				//sort of jagged manhattan distance to create trunk taper
-				else if(Math.abs(x)<=Math.abs(z))
-				{
-					colHeight = 18 - Math.abs(x) - Math.abs(z)*3 - rand.nextInt(2);
-				}
-				else
-				{
-					colHeight = 18 - Math.abs(x)*3 - Math.abs(z) - rand.nextInt(2);
+				} else {
+					// Sort of jagged Manhattan distance to create trunk taper
+					if (Math.abs(x) <= Math.abs(z)) {
+						colHeight = 18 - Math.abs(x) - Math.abs(z) * 3 - rand.nextInt(2);
+					} else {
+						colHeight = 18 - Math.abs(x) * 3 - Math.abs(z) - rand.nextInt(2);
+					}
 				}
 
-				for(int y=0; y<colHeight; y++)
-				{
+				for (int y = 0; y < colHeight; y++) {
 					placeLogAt(world, center.add(x, y, z));
 				}
 			}
 		}
 	}
+
 	BlockPos rotatedBranchEnd;
 	private List<BranchInfo> buildBranches(World world, Random rand, BlockPos center, int trunkHeight) {
 		List<BranchInfo> branchEndPos = new ArrayList<>();
-		List<BlockPos> rotatedBranchEndPositions = new ArrayList<>();
 		double xAngleTranslation;
 		double zAngleTranslation;
 		center = center.add(0, trunkHeight - 2, 0);
 
-		// Calculate logPos and rotatedBranchEnd before the loop
-		int rotEndPosX = 0;
-		int rotEndPosZ = 0;
 		BlockPos branchStart = null;
 
 		for (int n = 0; n < 7; n++) {
-			// maybe we just don't bother making a branch this time
+			// Maybe we just don't bother making a branch this time
 			if (rand.nextInt(21) == 0)
 				continue;
 
-			// only make branch 7 rarely
+			// Only make branch 7 rarely
 			if (n == 6 && rand.nextInt(8) != 0)
 				continue;
 
@@ -326,13 +319,20 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 			branchStart = center.add(xOffset, 0, zOffset);
 			BlockPos branchCurve = center.add(branchLength / 3, branchHeight, 0);
 			BlockPos branchEnd = center.add(branchLength + xOffset, branchHeight, 0);
+			// Calculate the rotatedBranchEnd position
+			int rotEndPosX = (int) Math.round((branchLength + xOffset) * xAngleTranslation);
+			int rotEndPosZ = (int) Math.round((branchLength + zOffset) * zAngleTranslation);
+			rotatedBranchEnd = branchStart.add(rotEndPosX, branchHeight, rotEndPosZ);
 
 			// add the actual branch end position to a list so we can add leaves to it later
 			rotEndPosX = (int) Math.round((branchLength + xOffset) * xAngleTranslation);
 			rotEndPosZ = (int) Math.round((branchLength + zOffset) * zAngleTranslation);
 			BlockPos rotatedBranchEnd = branchStart.add(rotEndPosX, branchHeight, rotEndPosZ);
+			while (!isValidGenLocation(world, rotatedBranchEnd, rand)) {
+				branchEndPos.add(new BranchInfo(rotatedBranchEnd, branchAngle));
+				placeLogAt(world, rotatedBranchEnd);
+			}
 			branchEndPos.add(new BranchInfo(rotatedBranchEnd, branchAngle));
-			rotatedBranchEndPositions.add(rotatedBranchEnd);
 
 			BlockPos[] branchArray = MathUtils.getQuadBezierArray(branchStart, branchCurve, branchEnd);
 			for (BlockPos pos : branchArray) {
@@ -359,6 +359,7 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 		}
 		for (BlockPos rotatedBranchEnd : rotatedBranchEndPositions) {
 			placeLogAt(world, rotatedBranchEnd);
+			placeLogBelow(world, rand, rotatedBranchEnd);
 		}
 		if (branchStart != null) {
 			// Place the log block at branchStart outside the loop
