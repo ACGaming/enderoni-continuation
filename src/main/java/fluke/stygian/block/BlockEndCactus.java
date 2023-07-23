@@ -4,6 +4,7 @@ import java.util.Random;
 
 import fluke.stygian.util.Reference;
 import net.minecraft.block.Block;
+import net.minecraft.block.IGrowable;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
@@ -28,7 +29,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class BlockEndCactus extends Block implements net.minecraftforge.common.IPlantable
+public class BlockEndCactus extends Block implements IGrowable
 {
 	public static final String REG_NAME = "endcactus";
 	public static final PropertyInteger AGE = PropertyInteger.create("age", 0, 15);
@@ -44,10 +45,41 @@ public class BlockEndCactus extends Block implements net.minecraftforge.common.I
         setTranslationKey(Reference.MOD_ID + ".endcactus");
 
         setRegistryName(REG_NAME);
-	}
-	
-	public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand)
+        setTickRandomly(true);
+    }
+
+    @Override
+    public boolean canGrow(World worldIn, BlockPos pos, IBlockState state, boolean isClient) {
+
+        // Only allow growing if light level is 0
+        int light = worldIn.getLight(pos);
+        return light == 0;
+    }
+
+    @Override
+    public void grow(World worldIn, Random rand, BlockPos pos, IBlockState state) {
+
+        // Only grow if light level is still 0
+        int light = worldIn.getLight(pos);
+        if (light == 0) {
+
+            worldIn.setBlockState(pos, state.withProperty(AGE, state.getValue(AGE) + 1), 4);
+
+        }
+
+    }
+
+    @Override
+    public boolean canUseBonemeal(World worldIn, Random rand, BlockPos pos, IBlockState state) {
+        return false;
+    }
+
+    public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand)
     {
+        // Check light level and random chance
+        if (worldIn.getLightFromNeighbors(pos.up()) >= 9 && rand.nextInt(7) == 0) {
+            grow(worldIn, rand, pos, state);
+        }
         if (!worldIn.isAreaLoaded(pos, 1)) return; // Forge: prevent growing cactus from loading unloaded chunks with block update
         BlockPos blockpos = pos.up();
 
@@ -62,20 +94,20 @@ public class BlockEndCactus extends Block implements net.minecraftforge.common.I
 
             if (cactusHeight < 7)
             {
-                int age = ((Integer)state.getValue(AGE)).intValue();
+                int age = state.getValue(AGE);
 
                 if(net.minecraftforge.common.ForgeHooks.onCropsGrowPre(worldIn, blockpos, state, true))
                 {
                 if (age == 15)
                 {
                     worldIn.setBlockState(blockpos, this.getDefaultState());
-                    IBlockState iblockstate = state.withProperty(AGE, Integer.valueOf(0));
+                    IBlockState iblockstate = state.withProperty(AGE, 0);
                     worldIn.setBlockState(pos, iblockstate, 4);
                     iblockstate.neighborChanged(worldIn, blockpos, this, pos);
                 }
                 else
                 {
-                    worldIn.setBlockState(pos, state.withProperty(AGE, Integer.valueOf(age + 1)), 4);
+                    worldIn.setBlockState(pos, state.withProperty(AGE, age + 1), 4);
                 }
                 net.minecraftforge.common.ForgeHooks.onCropsGrowPost(worldIn, pos, state, worldIn.getBlockState(pos));
                 }
@@ -165,18 +197,6 @@ public class BlockEndCactus extends Block implements net.minecraftforge.common.I
     public int getMetaFromState(IBlockState state)
     {
         return ((Integer)state.getValue(AGE)).intValue();
-    }
-
-    @Override
-    public net.minecraftforge.common.EnumPlantType getPlantType(net.minecraft.world.IBlockAccess world, BlockPos pos)
-    {
-        return net.minecraftforge.common.EnumPlantType.Nether;
-    }
-
-    @Override
-    public IBlockState getPlant(net.minecraft.world.IBlockAccess world, BlockPos pos)
-    {
-        return getDefaultState();
     }
 
     protected BlockStateContainer createBlockState()
