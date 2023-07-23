@@ -54,16 +54,6 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 		return true;
 	}
 
-	private void placeLogBelow(World world, Random rand, BlockPos pos) {
-		for (int i = 1; i <= 3; i++) {
-			BlockPos below = pos.down(i);
-			if (world.isAirBlock(below)) {
-				placeLogAt(world, below);
-			} else {
-				break;
-			}
-		}
-	}
 	private void placeLogAt(World worldIn, BlockPos pos) {
 		worldIn.setBlockState(pos, LOG);
 	}
@@ -198,7 +188,6 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 
 						if (xDist + zDist < distortedMaxDistance) {
 							placeLeafAt(world, branch.endPoint.add(x, y, z));
-							placeLogBelow(world, rand, branch.endPoint.add(x, y, z));
 							if (y < 2 && xDist + zDist > lesserMaxDist && rand.nextInt(4) == 0)
 								possibleVineSpots.add(branch.endPoint.add(x, y, z));
 						}
@@ -359,7 +348,6 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 		}
 		for (BlockPos rotatedBranchEnd : rotatedBranchEndPositions) {
 			placeLogAt(world, rotatedBranchEnd);
-			placeLogBelow(world, rand, rotatedBranchEnd);
 		}
 		if (branchStart != null) {
 			// Place the log block at branchStart outside the loop
