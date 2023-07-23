@@ -21,71 +21,86 @@ import java.util.Random;
 
 public class WorldGenEnderCanopy extends WorldGenAbstractTree
 {
-	protected static final IBlockState LOG = ModBlocks.endLog.getDefaultState();
-	protected static final IBlockState LEAF = ModBlocks.endLeaves.getDefaultState();
+	private static final IBlockState LOG = ModBlocks.endLog.getDefaultState();
+	private static final IBlockState LEAF = ModBlocks.endLeaves.getDefaultState();
 	private static final IBlockState END_GRASS = ModBlocks.endGrass.getDefaultState();
+	private static final int MIN_TRUNK_HEIGHT = 12;
+	private static final int MAX_TRUNK_HEIGHT = 20;
+	private static final int MAX_BRANCH_LENGTH = 20;
 
-	public WorldGenEnderCanopy(boolean notify)
-	{
+
+	public WorldGenEnderCanopy(boolean notify) {
 		super(notify);
-
 	}
 
 	@Override
-	public boolean generate(World world, Random rand, BlockPos pos)
-	{
+	public boolean generate(World world, Random rand, BlockPos pos) {
 		IBlockState inState = world.getBlockState(pos);
-		if(inState != END_GRASS && inState != Blocks.END_STONE.getDefaultState())
+		if (inState != END_GRASS && inState != Blocks.END_STONE.getDefaultState())
 			pos = pos.down();
 
-		int trunkHeight = 16 + rand.nextInt(4);
-		if(!isValidGenLocation(world, pos, trunkHeight))
+		int trunkHeight = MIN_TRUNK_HEIGHT + rand.nextInt(MAX_TRUNK_HEIGHT - MIN_TRUNK_HEIGHT + 1);
+
+		// Check for surrounding terrain
+		if (!isValidGenLocation(world, pos, trunkHeight))
 			return false;
 
+		// Adjust trunk height and branch lengths based on surrounding terrain
+		int actualTrunkHeight = MathHelper.clamp(MIN_TRUNK_HEIGHT + rand.nextInt(MAX_TRUNK_HEIGHT - MIN_TRUNK_HEIGHT + 1), MIN_TRUNK_HEIGHT, trunkHeight);
+
 		List<BranchInfo> branchEndPos;
-		buildTrunk(world, rand, pos, trunkHeight);
-		branchEndPos = buildBranches(world, rand, pos, trunkHeight);
+		buildTrunk(world, rand, pos, actualTrunkHeight);
+		branchEndPos = buildBranches(world, rand, pos, actualTrunkHeight);
 		buildCanopy(world, rand, pos, branchEndPos);
 		return true;
 	}
 
-	public boolean isValidGenLocation(World world, BlockPos pos, int trunkHeight)
-	{
-		if(pos.getY() < 3 || pos.getY() + trunkHeight + 22 > 255)
+	private boolean isValidGenLocation(World world, BlockPos pos, int trunkHeight) {
+		if (!isValidBaseLocation(world, pos) || !isValidTrunkLocation(world, pos, trunkHeight) || !isValidCanopyLocation(world, pos, trunkHeight)) {
 			return false;
-
-		for(BlockPos trunkBaseBlock : BlockPos.getAllInBoxMutable(pos.add(-5, 0, -5), pos.add(5, 2, 5)))
-		{
-
-			IBlockState state = world.getBlockState(trunkBaseBlock);
-			if(state != END_GRASS && state != Blocks.END_STONE.getDefaultState() && state.getBlock() != ModBlocks.endCanopySapling && !state.getBlock().isReplaceable(world, trunkBaseBlock) && !isReplaceable(world, trunkBaseBlock, state))
-			{
-				//System.out.println(state.getBlock().getLocalizedName() + " blocked tree from spawning");
-				//System.out.println(trunkBaseBlock);
-				return false;
-			}
 		}
-
-		for(BlockPos trunkCoreBlock : BlockPos.getAllInBoxMutable(pos.add(-1, 3, -1), pos.add(1, trunkHeight-1, 3)))
-		{
-			if(!isReplaceable(world, trunkCoreBlock))
-			{
-				//System.out.println(trunkCoreBlock);
-				return false;
-			}
-		}
-
-		for(BlockPos canopyBlock : BlockPos.getAllInBoxMutable(pos.add(-23, trunkHeight+7, -23), pos.add(23, trunkHeight+7, 23)))
-		{
-			if(!isReplaceable(world, canopyBlock))
-			{
-				//System.out.println(canopyBlock);
-				return false;
-			}
-		}
-
 		return true;
+	}
 
+	private boolean isValidBaseLocation(World world, BlockPos pos) {
+		for (BlockPos trunkBaseBlock : BlockPos.getAllInBoxMutable(pos.add(-5, 0, -5), pos.add(5, 2, 5))) {
+			IBlockState state = world.getBlockState(trunkBaseBlock);
+			if (!isReplaceable(world, trunkBaseBlock, state) && state.getBlock() != ModBlocks.endCanopySapling) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean isValidTrunkLocation(World world, BlockPos pos, int trunkHeight) {
+		for (BlockPos trunkCoreBlock : BlockPos.getAllInBoxMutable(pos.add(-1, 3, -1), pos.add(1, trunkHeight - 1, 3))) {
+			if (!isReplaceable(world, trunkCoreBlock)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean isValidCanopyLocation(World world, BlockPos pos, int trunkHeight) {
+		for (BlockPos canopyBlock : BlockPos.getAllInBoxMutable(pos.add(-23, trunkHeight + 7, -23), pos.add(23, trunkHeight + 7, 23))) {
+			IBlockState state = world.getBlockState(canopyBlock.down());
+			if (!isReplaceable(world, canopyBlock) && canopyBlock.getY() >= pos.getY()
+					&& !(state.getBlock() instanceof BlockLeaves) && !(state.getBlock() instanceof BlockLog)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private void placeLogAt(World worldIn, BlockPos pos) {
+		worldIn.setBlockState(pos, LOG);
+	}
+
+	private void placeLeafAt(World worldIn, BlockPos pos) {
+		IBlockState state = worldIn.getBlockState(pos);
+		if (state.getBlock().isAir(state, worldIn, pos) || state.getBlock().isLeaves(state, worldIn, pos) || state == ModBlocks.endVine.getDefaultState()) {
+			worldIn.setBlockState(pos, LEAF);
+		}
 	}
 
 	public boolean isReplaceable(World world, BlockPos pos) {
@@ -358,21 +373,6 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 		return branchEndPos;
 	}
 
-	private void placeLogAt(World worldIn, BlockPos pos)
-	{
-		this.setBlockAndNotifyAdequately(worldIn, pos, LOG);
-	}
-
-	private void placeLeafAt(World worldIn, BlockPos pos)
-	{
-		IBlockState state = worldIn.getBlockState(pos);
-
-		if (state.getBlock().isAir(state, worldIn, pos) || state.getBlock().isLeaves(state, worldIn, pos) || state == ModBlocks.endVine.getDefaultState())
-		{
-			this.setBlockAndNotifyAdequately(worldIn, pos, LEAF);
-		}
-	}
-
 	//Draws a line from start to end with midsection pulled towards curvePos
 	protected void drawCurvedBresehnam(World world, BlockPos start, BlockPos end, BlockPos curvePos, IBlockState state)
 	{
@@ -382,16 +382,13 @@ public class WorldGenEnderCanopy extends WorldGenAbstractTree
 		}
 	}
 
-	private class BranchInfo
-	{
+	private static class BranchInfo {
 		BlockPos endPoint;
 		int rotationAngle;
 
-		public BranchInfo(BlockPos endPoint, int rotationAngle)
-		{
+		public BranchInfo(BlockPos endPoint, int rotationAngle) {
 			this.endPoint = endPoint;
 			this.rotationAngle = rotationAngle;
 		}
 	}
-
 }
