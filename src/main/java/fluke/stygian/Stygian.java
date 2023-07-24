@@ -1,5 +1,9 @@
 package fluke.stygian;
 
+import fluke.stygian.entity.ender.ModEntities;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.registry.EntityEntry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -34,7 +38,7 @@ public class Stygian
 	{
 		FluidRegistry.enableUniversalBucket();
 	}
-	
+
 	@EventHandler
 	public static void preInit(FMLInitializationEvent event)
 	{
@@ -56,5 +60,12 @@ public class Stygian
 	public void startServer(FMLServerStartingEvent event) 
 	{
 		//event.registerServerCommand(new DebugCommand()); //TODO delete
+	}
+	@Mod.EventBusSubscriber
+	public static class RegistrationHandler {
+		@SubscribeEvent
+		public static void registerEntities(final RegistryEvent.Register<EntityEntry> event) {
+			ModEntities.registerEntities(event);
+		}
 	}
 }

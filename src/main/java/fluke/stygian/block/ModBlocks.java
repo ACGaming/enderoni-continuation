@@ -2,15 +2,14 @@ package fluke.stygian.block;
 
 import fluke.stygian.block.fluid.ModBlockFluidClassic;
 import fluke.stygian.block.fluid.ModFluids;
+import fluke.stygian.block.item.ItemEndBone;
+import fluke.stygian.block.item.ItemEndBoneMeal;
 import fluke.stygian.util.Reference;
 import net.minecraft.block.Block;
-import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.material.MaterialLiquid;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemBlock;
 import net.minecraftforge.event.RegistryEvent;
-import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
@@ -35,9 +34,15 @@ public class ModBlocks
 	@GameRegistry.ObjectHolder(BlockEndGrass.REG_NAME)
     public static BlockEndGrass endGrass;
 	
+	@GameRegistry.ObjectHolder(ItemEndBoneMeal.REG_NAME)
+    public static ItemEndBoneMeal endBoneMeal;
+
+	@GameRegistry.ObjectHolder(ItemEndBone.REG_NAME)
+	public static ItemEndBone endBone;
+
 	@GameRegistry.ObjectHolder(BlockEndTallGrass.REG_NAME)
-    public static BlockEndTallGrass endTallGrass;
-	
+	public static BlockEndTallGrass endTallGrass;
+
 	@GameRegistry.ObjectHolder(BlockEndGlowPlant.REG_NAME)
     public static BlockEndGlowPlant endGlowPlant;
 	
@@ -91,10 +96,13 @@ public class ModBlocks
 		reggy.register(new ItemBlock(ModBlocks.endCanopySapling).setRegistryName(ModBlocks.endCanopySapling.getRegistryName()));
 		reggy.register(new ItemBlock(ModBlocks.endVine).setRegistryName(ModBlocks.endVine.getRegistryName()));
 		reggy.register(new ItemBlock(ModBlocks.endObsidian).setRegistryName(ModBlocks.endObsidian.getRegistryName()));
-		reggy.register(new ItemBlock(ModBlocks.endMagma).setRegistryName(ModBlocks.endMagma.getRegistryName()));
+        reggy.register(new ItemBlock(ModBlocks.endMagma).setRegistryName(ModBlocks.endMagma.getRegistryName()));
 		reggy.register(new ItemBlock(ModBlocks.endCactus).setRegistryName(ModBlocks.endCactus.getRegistryName()));
 		reggy.register(new ItemBlock(ModBlocks.endAcid).setRegistryName("endacid"));
-		
+
+		reggy.register(new ItemEndBoneMeal());
+		reggy.register(new ItemEndBone());
+
 		OreDictionary.registerOre("logWood", endLog);
 		OreDictionary.registerOre("plankWood", endPlanks);
 		OreDictionary.registerOre("treeLeaves", endLeaves);
@@ -106,6 +114,8 @@ public class ModBlocks
 		endPlanks.initModel();
 		endLeaves.initModel();
 		endGrass.initModel();
+		endBoneMeal.initModel();
+		endBone.initModel();
 		endTallGrass.initModel();
 		endGlowPlant.initModel();
 		endCanopySapling.initModel();
