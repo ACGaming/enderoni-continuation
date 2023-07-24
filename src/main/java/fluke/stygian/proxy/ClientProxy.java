@@ -1,6 +1,7 @@
 package fluke.stygian.proxy;
 
 import fluke.stygian.block.ModBlocks;
+import fluke.stygian.entity.EntityEndSkeleton;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -12,5 +13,9 @@ public class ClientProxy extends CommonProxy
 	@SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
         ModBlocks.initModels();
+    }
+    @Override
+    public void init() {
+        super.init();
     }
 }

@@ -9,5 +9,12 @@ tile.stygian.endobsidian.name=Porphyry
 tile.stygian.endmagma.name=Leachstone
 tile.stygian.endvine.name=Stygian Creeper
 tile.stygian.endglow.name=Enbiotic
-tile.stygian:endacid.name=Stygian Acid
+tile.stygian:endacid.name=Stygian Acid:
+
 fluid.endacid=Stygian Acid
+
+item.stygian.end_skeleton_spawn_egg.name=End Skeleton Spawn Egg
+item.stygian.endbone.name=End Bone
+item.stygian.endbonemeal.name=End Bone Meal
+
+entity.end_skeleton.name=End Skeleton

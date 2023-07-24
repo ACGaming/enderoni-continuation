@@ -3,11 +3,13 @@ package fluke.stygian.world.biomes;
 import java.util.Random;
 
 import fluke.stygian.block.ModBlocks;
+import fluke.stygian.entity.EntityEndSkeleton;
 import fluke.stygian.world.feature.WorldGenEndCactus;
 import fluke.stygian.world.feature.WorldGenEndLake;
 import fluke.stygian.world.feature.WorldGenEndVolcano;
 import fluke.stygian.world.feature.WorldGenSurfacePatch;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
@@ -18,6 +20,7 @@ import net.minecraft.world.biome.BiomeDecorator;
 import net.minecraft.world.biome.BiomeEndDecorator;
 import net.minecraft.world.gen.feature.WorldGenLakes;
 import net.minecraft.world.gen.feature.WorldGenerator;
+import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -53,6 +56,7 @@ public class BiomeEndVolcano extends Biome
         this.topBlock = END_OBSIDIAN;
         this.fillerBlock = END_OBSIDIAN;
         this.decorator = new BiomeEndDecorator();
+		EntityRegistry.addSpawn(EntityEndSkeleton.class, 5, 1, 4, EnumCreatureType.MONSTER, this);
         randy = new Random();
     }
     

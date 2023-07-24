@@ -1,0 +1,13 @@
+
+{
+  "result": {
+    "item": "stygian:endbonemeal",
+    "count": 3
+  },
+  "ingredients": [
+    {
+      "item": "stygian:endbone"
+    }
+  ],
+  "type": "forge:ore_shapeless"
+}
