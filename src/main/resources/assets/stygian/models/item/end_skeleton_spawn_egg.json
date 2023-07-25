@@ -1,31 +1,6 @@
 {
-    "parent": "item/handheld",
-    "texture": "stygian:item/end_skeleton_spawn_egg",
-    "display": {
-        "thirdperson_righthand": {
-            "rotation": [ 0, 270, 45 ],
-            "translation": [ 0, 0, 0 ],
-            "scale": [ 0.375, 0.375, 0.375 ]
-        },
-        "thirdperson_lefthand": {
-            "rotation": [ 0, 90, 45  ],
-            "translation": [ 0, 0, 0  ],
-            "scale":  [ 0.375, 0.375, 0.375 ]
-        },
-        "firstperson_righthand": {
-            "rotation": [ 0, -135, 25 ],
-            "translation": [ 1.13, 4, 1.13 ],
-            "scale": [ 0.625, 0.625, 0.625 ]
-        },
-        "firstperson_lefthand": {
-            "rotation": [ 0, -45, -25 ],
-            "translation": [ 1.13, 4, 1.13 ],
-            "scale": [ 0.625, 0.625, 0.625 ]
-        },
-        "gui": {
-            "rotation": [ 0, 0, 0 ],
-            "translation": [ 0, 0, 0 ],
-            "scale": [ 0.5, 0.5, 0.5 ]
-        }
+    "parent": "item/generated",
+    "textures": {
+        "layer0": "stygian:item/end_skeleton_spawn_egg"
     }
 }

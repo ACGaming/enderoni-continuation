@@ -1,7 +1,7 @@
 package fluke.stygian.entity;
 
 import fluke.stygian.block.ModBlocks;
-import fluke.stygian.entity.render.RenderCustomSkeleton;
+import fluke.stygian.entity.render.RenderEndSkeleton;
 import fluke.stygian.util.Reference;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.RenderManager;
@@ -49,7 +49,7 @@ public class EntityEndSkeleton extends EntitySkeleton {
         super.entityInit();
         float yaw = rotationYaw;
         renderYawOffset = yaw;
-       // registerRenderer(); # todo the texture override make the sword of the entity invisible
+        registerRenderer();
     }
 
     @Override
@@ -86,6 +86,6 @@ public class EntityEndSkeleton extends EntitySkeleton {
     public static void registerRenderer() {
         ResourceLocation skinLocation = new ResourceLocation(Reference.MOD_ID, "textures/entity/entity_end_skeleton.png");
         RenderManager renderManager = Minecraft.getMinecraft().getRenderManager();
-        renderManager.entityRenderMap.put(EntityEndSkeleton.class, new RenderCustomSkeleton(renderManager, skinLocation));
+        renderManager.entityRenderMap.put(EntityEndSkeleton.class, new RenderEndSkeleton(renderManager, skinLocation));
     }
 }

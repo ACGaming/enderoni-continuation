@@ -6,7 +6,6 @@ import fluke.stygian.block.fluid.ModFluids;
 import fluke.stygian.block.item.ItemEndBone;
 import fluke.stygian.block.item.ItemEndBoneMeal;
 import fluke.stygian.block.item.ItemEndSkeletonSpawnEgg;
-import fluke.stygian.entity.EntityEndSkeleton;
 import fluke.stygian.util.Reference;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -16,15 +15,11 @@ import net.minecraft.item.ItemBlock;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.EntityEntry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import net.minecraftforge.oredict.OreDictionary;
 import net.minecraftforge.registries.IForgeRegistry;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @GameRegistry.ObjectHolder(Reference.MOD_ID)
 @Mod.EventBusSubscriber(modid = Reference.MOD_ID)
@@ -39,19 +34,16 @@ public class ModBlocks
 	@GameRegistry.ObjectHolder(BlockEndLeaves.REG_NAME)
     public static BlockEndLeaves endLeaves;
 	@GameRegistry.ObjectHolder(ItemEndSkeletonSpawnEgg.REG_NAME)
-	public static ItemEndSkeletonSpawnEgg endSkeletonSpawnEgg;
-
-	@GameRegistry.ObjectHolder(EntityEndSkeleton.NAME)
-	public static EntityEntry endSkeleton;
+	public static ItemEndSkeletonSpawnEgg endSkeletonSpawnEgg = new ItemEndSkeletonSpawnEgg();
 
 	@GameRegistry.ObjectHolder(BlockEndGrass.REG_NAME)
     public static BlockEndGrass endGrass;
 	
 	@GameRegistry.ObjectHolder(ItemEndBoneMeal.REG_NAME)
-    public static ItemEndBoneMeal endBoneMeal;
+	public static ItemEndBoneMeal endBoneMeal = new ItemEndBoneMeal();
 
 	@GameRegistry.ObjectHolder(ItemEndBone.REG_NAME)
-	public static ItemEndBone endBone;
+	public static ItemEndBone endBone = new ItemEndBone();
 
 	@GameRegistry.ObjectHolder(BlockEndTallGrass.REG_NAME)
 	public static BlockEndTallGrass endTallGrass;
@@ -79,13 +71,6 @@ public class ModBlocks
 	public static CreativeTabs STYGIAN_TAB = new CreativeTabStygian("stygian_tab");
 
 	@SubscribeEvent
-	public static void registerEntity(RegistryEvent.Register<EntityEntry> event) {
-
-		IForgeRegistry<EntityEntry> reggy = event.getRegistry();
-
-	}
-
-	@SubscribeEvent
 	public static void registerBlocks(RegistryEvent.Register<Block> event) 
 	{
 		ModFluids.registerFluids();
@@ -108,6 +93,7 @@ public class ModBlocks
     public static void registerItems(RegistryEvent.Register<Item> event) 
 	{
 		IForgeRegistry<Item> reggy = event.getRegistry();
+
 		Item[] itemsToRegister = {
 				new ItemBlock(ModBlocks.endLog).setRegistryName(ModBlocks.endLog.getRegistryName()),
 				new ItemBlock(ModBlocks.endPlanks).setRegistryName(ModBlocks.endPlanks.getRegistryName()),
@@ -121,9 +107,9 @@ public class ModBlocks
 				new ItemBlock(ModBlocks.endMagma).setRegistryName(ModBlocks.endMagma.getRegistryName()),
 				new ItemBlock(ModBlocks.endCactus).setRegistryName(ModBlocks.endCactus.getRegistryName()),
 				new ItemBlock(ModBlocks.endAcid).setRegistryName("endacid"),
-				new ItemEndBoneMeal(),
-				new ItemEndBone(),
-				new ItemEndSkeletonSpawnEgg()
+				ModBlocks.endBoneMeal,
+				ModBlocks.endBone,
+				ModBlocks.endSkeletonSpawnEgg,
 		};
 
 		for (Item item : itemsToRegister) {
