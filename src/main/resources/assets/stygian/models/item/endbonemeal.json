@@ -1,6 +1,6 @@
 {
     "parent": "item/generated",
     "textures": {
-        "layer0": "stygian:item/endbonemal"
+        "layer0": "stygian:item/endbonemeal"
     }
 }

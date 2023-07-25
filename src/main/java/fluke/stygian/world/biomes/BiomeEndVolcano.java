@@ -3,6 +3,7 @@ package fluke.stygian.world.biomes;
 import java.util.Random;
 
 import fluke.stygian.block.ModBlocks;
+import fluke.stygian.config.Configs;
 import fluke.stygian.entity.EntityEndSkeleton;
 import fluke.stygian.world.feature.WorldGenEndCactus;
 import fluke.stygian.world.feature.WorldGenEndLake;
@@ -74,7 +75,7 @@ public class BiomeEndVolcano extends Biome
     
     public void decorate(World world, Random rand, BlockPos pos)
     {
-    	if(randy.nextInt(8) == 0)
+		if(randy.nextInt(Configs.worldgen.volcanoFrequency ) == 0)
 		{
 			int yHeight = getEndSurfaceHeight(world, pos.add(16, 0, 16), 50, 70, null);
 			if(yHeight > 0)

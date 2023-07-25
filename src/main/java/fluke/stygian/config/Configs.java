@@ -18,7 +18,9 @@ public class Configs
 		@Config.Comment({"Controls size of end biomes. Larger number = larger biomes", "Default: 4"})
 		@Config.RequiresWorldRestart
 		public int endBiomeSize = 4;
-		
+		@Config.Comment({"Controls how often end volcanoes generate. Larger number = less volcanoes", "Default: 8"})
+		@Config.RequiresWorldRestart
+		public int volcanoFrequency = 8;
 		@Config.Comment({"Controls how often large end trees generate. Larger number = less trees", "Default: 7"})
 		@Config.RequiresWorldRestart
 		public int treeFrequency = 7;
